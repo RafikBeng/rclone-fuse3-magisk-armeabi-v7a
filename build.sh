@@ -42,6 +42,8 @@ echo "#MAGISK" > META-INF/com/google/android/updater-script
 wget https://raw.githubusercontent.com/topjohnwu/Magisk/refs/heads/master/scripts/module_installer.sh -O META-INF/com/google/android/update-binary
 chmod +x META-INF/com/google/android/update-binary
 
+
+
 ZIP_NAME="magisk-rclone_$ABI.zip"
 zip -r9 ../$ZIP_NAME .
 cd ..
