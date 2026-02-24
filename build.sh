@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
-
+# 🔥 Prepare libfuse automatically
+./scripts/prepare-libfuse.sh
 # 获取传入的参数
 ABI=$1
 TAG_NAME=${TAG_NAME:-$2}
