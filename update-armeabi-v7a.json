@@ -1,0 +1,6 @@
+{
+  "version": "v1.73.1",
+  "versionCode": 29,
+  "zipUrl": "https://github.com/NewFuture/rclone-fuse3-magisk/releases/download/v1.73.1/magisk-rclone_armeabi-v7a.zip",
+  "changelog": "https://github.com/NewFuture/rclone-fuse3-magisk/releases/tag/v1.73.1"
+}

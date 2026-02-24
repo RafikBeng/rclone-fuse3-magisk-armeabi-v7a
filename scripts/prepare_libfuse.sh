@@ -17,11 +17,17 @@ cd $LIBFUSE_DIR
 echo "[*] Checking out commit $LIBFUSE_COMMIT..."
 git checkout $LIBFUSE_COMMIT
 
-echo "[*] Applying Android patches..."
+echo "[*] Applying Android pthread patches..."
 
-patch -p1 < ../patches/android_no_pthread_cancel.patch
-patch -p1 < ../patches/android_disable_cleanup_cancel.patch
+# 1️⃣ Disable pthread_cancel + pthread_setcancelstate
+patch -p1 < ../patch-libfuse3/lib-fuse_loop_mt.c.patch
 
+
+# 2️⃣ Disable cleanup thread cancellation (Android safe)
+patch -p1 < ../patch-libfuse3/lib-fuse.c.patch
+
+# Remove librt dependency (Android does not have it)
+patch -p1 < ../patch-libfuse3/lib-meson.build.patch
 cd ..
 
 echo "[*] libfuse ready."
