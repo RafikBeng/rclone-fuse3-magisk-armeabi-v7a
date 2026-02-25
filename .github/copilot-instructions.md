@@ -39,8 +39,8 @@ This repository builds a Magisk module that integrates Rclone with FUSE 3.17.x s
 ## Build Process
 
 ### Supported Architectures
-- `arm64-v8a` (aarch64)
-- `x86_64`
+- `armeabi-v7a` 
+
 
 ### Build Steps
 

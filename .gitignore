@@ -3,3 +3,4 @@ output/
 libfuse-android-output/
 magisk-rclone_*/
 magisk-rclone_armeabi-v7a.zip
+libfuse
