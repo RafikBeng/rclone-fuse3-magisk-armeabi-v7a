@@ -148,8 +148,8 @@ jobs:
           submodules: true  # Initialize submodules
 
       # Step 1.2: Run patch script
-      - name: Patch
-        run: ./patch.sh
+      #- name: Patch
+      #  run: ./patch.sh
 
       # Step 2.1: Install meson and ninja
       - name: Install meson and ninja

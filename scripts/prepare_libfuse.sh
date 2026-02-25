@@ -13,21 +13,13 @@ echo "[*] Cloning libfuse..."
 git clone https://github.com/libfuse/libfuse.git $LIBFUSE_DIR
 
 cd $LIBFUSE_DIR
-
 echo "[*] Checking out commit $LIBFUSE_COMMIT..."
 git checkout $LIBFUSE_COMMIT
-
+cd ..
 echo "[*] Applying Android pthread patches..."
 
-# 1️⃣ Disable pthread_cancel + pthread_setcancelstate
-patch -p1 < ../patch-libfuse3/lib-fuse_loop_mt.c.patch
+./patch.sh
 
 
-# 2️⃣ Disable cleanup thread cancellation (Android safe)
-patch -p1 < ../patch-libfuse3/lib-fuse.c.patch
-
-# Remove librt dependency (Android does not have it)
-patch -p1 < ../patch-libfuse3/lib-meson.build.patch
-cd ..
 
 echo "[*] libfuse ready."
