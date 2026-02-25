@@ -3,11 +3,11 @@
 MODPATH=${MODPATH:-/data/adb/modules/rclone}
 
 echo "Loading Environment Variables"
-echo "  * 默认(Predefined): $MODPATH/env"
+echo "  * Default (Predefined): $MODPATH/env"
 set -a && . "$MODPATH/env" && set +a
-echo "  * 自定义(Customized): $RCLONE_CONFIG_DIR/env"
+echo "  * Custom (Customized): $RCLONE_CONFIG_DIR/env"
 
-# 检查并停止正在运行的 RClone Web 进程
+# Check and stop any running RClone Web process
 function check_stop_web_pid() {
   if [ -f "$RCLONEWEB_PID" ]; then
     PID=$(cat "$RCLONEWEB_PID")
@@ -16,7 +16,7 @@ function check_stop_web_pid() {
       pkill -P $PID
       rm -f "$RCLONEWEB_PID"
       echo "RClone Web GUI stopped successfully."
-      echo "已成功关闭 RClone Web GUI"
+      echo "RClone Web GUI closed successfully."
       return 1
     else
       echo "Found a stale PID file. Removing it..."
@@ -27,7 +27,7 @@ function check_stop_web_pid() {
 }
 
 function start_web() {
-  # 构建 RClone Web GUI 的访问 URL
+  # Build the access URL for the RClone Web GUI
   if [[ "${RCLONE_RC_ADDR}" == :* ]]; then
     LOCAL_IP=$(ip route get 1 | sed -n 's/^.*src \([0-9.]*\) .*$/\1/p')
     URL="http://${LOCAL_IP:-localhost}${RCLONE_RC_ADDR}"
@@ -38,13 +38,13 @@ function start_web() {
   set -e
   echo "RClone Web GUI will start at: ${URL}"
   echo "Open the following URL in your browser to access the web GUI:"
-  echo "浏览器访问: ${URL} 进行配置"
+  echo "Open in browser: ${URL} to configure"
 
   nohup rclone-web > "$RCLONE_LOG_DIR/rclone-web.log" &
   PID=$!
   echo "$PID" > "$RCLONEWEB_PID"
   echo "RClone Web GUI started with PID($PID)."
-  echo "网页已启动 $URL"
+  echo "Web GUI started at $URL"
 }
 
 if check_stop_web_pid; then

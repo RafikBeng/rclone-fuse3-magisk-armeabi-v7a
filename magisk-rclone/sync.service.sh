@@ -11,7 +11,7 @@ sync_all() {
   if [ -f "$RCLONESYNC_CONF" ]; then
     unset RCLONE_RC 
     while read -r line; do
-      # 跳过空行和注释
+      # Skip empty lines and comments
       [ -z "$line" ] && continue
       echo "$line" | grep -qE '^\s*#' && continue
 
@@ -29,7 +29,7 @@ sync_all() {
     COPY_LOG="$RCLONE_LOG_DIR/rclone_copy.log"
     unset RCLONE_RC 
     while read -r line; do
-      # 跳过空行和注释
+      # Skip empty lines and comments
       [ -z "$line" ] && continue
       echo "$line" | grep -qE '^\s*#' && continue
 
