@@ -19,21 +19,21 @@ x86_64)
     ARCH_URL_PART="x64"
     ;;
 *)
-    echo "! 不支持的架构: $ABI"
+    echo "! Unsupported architecture: $ABI"
     exit 1
     ;;
 esac
 
-# 如果你知道固定版本，可以直接写死
+# If you know the fixed version, you can hard-code it directly
 
 FILENAME="rclone-android-21-${ARCH_URL_PART}.gz"
 RCLONE_URL="https://beta.rclone.org/${RCLONE_VERSION}/testbuilds/${FILENAME}"
 
-echo "- 下载 rclone: $RCLONE_URL"
+echo "- Downloading rclone: $RCLONE_URL"
 TMP_GZ="/tmp/rclone.gz"
-curl -L "$RCLONE_URL" -o "$TMP_GZ" || abort "! 下载失败"
+curl -L "$RCLONE_URL" -o "$TMP_GZ" || abort "! Download failed"
 
 gunzip -c "$TMP_GZ" > $SAVE_PATH
 rm -f "$TMP_GZ"
 
-echo "下载完成 🎉"
+echo "Download complete 🎉"

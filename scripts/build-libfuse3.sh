@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-# 定义支持的架构
+# Define supported architectures
 declare -A platforms=(
   ["arm64-v8a"]="aarch64-linux-android"
   ["armeabi-v7a"]="armv7a-linux-androideabi"
@@ -8,27 +8,27 @@ declare -A platforms=(
   ["x86_64"]="x86_64-linux-android"
 )
 
-# 获取传入的参数
+# Get the input parameters
 abi=$1
-API=${2:-28} # 如果未传入第二个参数，则默认使用 28 (Andorid 9)
+API=${2:-28} # If the second argument is not provided, default to 28 (Android 9)
 
-# 检查传入的 $abi 是否有效
+# Check if the provided $abi is valid
 if [[ -z "${platforms[$abi]}" ]]; then
   echo "Error: Unsupported ABI '$abi'. Supported ABIs are: ${!platforms[@]}"
   exit 1
 fi
 
-# 设置通用的工具链路径
+# Set the common toolchain path
 export TOOLCHAIN=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64
 export PATH=$TOOLCHAIN/bin:$PATH
 export SYSROOT=$TOOLCHAIN/sysroot
 
-# 构建 libfuse
+# Build libfuse
 echo "==============Start $abi (API $API) =============="
 echo "Building libfuse for $abi with API level $API..."
 
 
-# 设置架构相关变量
+# Set architecture-related variables
 export TARGET_HOST=${platforms[$abi]}
 export CC=$TARGET_HOST$API-clang
 export CXX=$TARGET_HOST$API-clang++
@@ -38,11 +38,11 @@ export STRIP=$TOOLCHAIN/bin/llvm-strip
 
 cd libfuse
 
-# 清理旧构建目录
+# Clean up old build directory
 rm -rf build
 mkdir -p build
 
-# 先生成 android_cross_file.txt
+# First generate the android_cross_file.txt
 cat > android_cross_file.txt << EOF
 [binaries]
 c = '$CC'
@@ -68,7 +68,7 @@ cpu = '$(if [[ "$abi" == "arm64-v8a" ]]; then echo "aarch64"; elif [[ "$abi" == 
 endian = 'little'
 EOF
 
-# 然后使用 meson 配置构建
+# Then use meson to configure the build
 meson setup build\
   --cross-file=android_cross_file.txt \
   -Dutils=true \
@@ -78,7 +78,7 @@ meson setup build\
   -Dbuildtype=release \
   --default-library=static
 
-# 使用 ninja 编译和安装
+# Compile and install using ninja
 ninja -C build
 
 cd ..

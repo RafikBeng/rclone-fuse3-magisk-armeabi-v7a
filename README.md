@@ -1,141 +1,218 @@
-# Rclone Magisk Module
 
-This Magisk module integrates Rclone with FUSE support into Android, allowing you to manage remote storage mounts seamlessly. It includes scripts for managing Rclone services and automating tasks during boot and runtime.
+# Rclone Magisk Module (FUSE 3.17.x Android Build)
 
-本 Magisk 模块将 Rclone（支持 FUSE 3.17.x）集成到 Android，实现远程存储的无缝挂载与自动化管理。包含服务脚本，可在开机和运行时自动管理 Rclone 任务。
+This Magisk module integrates **Rclone with FUSE 3.17.x** into Android, allowing remote storage to be mounted as local directories.
 
-## Features / 功能
-
-- **FUSE Integration**: Mount remote storage as local directories using Rclone with FUSE 3.17.x. (通过 Rclone + FUSE 挂载远程存储为本地目录)
-- **Automated Boot Mounts**: Automatically mount configured remotes during system boot. (系统启动时自动挂载配置的远程存储)
-- **Web GUI Management**: Start and manage the Rclone Web GUI. (一键启动 Rclone Web GUI，网页管理)
-- **Customizable Configuration**: Easily configure Rclone options via environment variables.  (通过环境变量灵活配置 Rclone 选项)
-- **RClone Sync**: sync service (支持自动同步任务)
-
-* Click the action button to start the web server for configuration  
-  * 点击 action 启动 web server 网页配置
-* Automatically mount all configured remotes at boot  
-  * 开机自动挂载所有配置
-* Configuration directory:  
-  * 配置文件夹:
-    * `/data/adb/modules/rclone/conf/rclone.conf` - Main config (use `rclone-config` to edit)  
-      * 配置文件 (可使用 rclone-config 配置)
-    * `/data/adb/modules/rclone/conf/env` - Custom environment variables and flags  
-      * 自定义参数和 Flag
-    * `/data/adb/modules/rclone/conf/htpasswd` - Web GUI username/password  
-      * web 账号密码
-    * `/data/adb/modules/rclone/conf/sync` - Sync jobs config file  
-      * 同步任务配置文件
-
-## Scripts / 脚本
-
-### `rclone-config`
-
-Opens the Rclone configuration interface.  
-
-打开 Rclone 配置界面。
-
-#### Usage / 用法:
-```bash
-rclone-config
-```
+Originally based on upstream libfuse, this project includes Android-specific patches required to build and run libfuse successfully using Android NDK.
 
 ---
 
-### `rclone-web`
+## Overview
 
-Starts the Rclone Web GUI with predefined options. 
+This module provides:
 
-启动 Rclone Web GUI 并使用预设参数。
+- Rclone binary
+- Patched libfuse3 for Android
+- Boot-time auto mounting
+- Web GUI support
+- Sync automation
+- Magisk integration
 
-#### Usage / 用法:
-```bash
-rclone-web --rc-addres=:8080
-```
-
----
-
-### `rclone-sync`
-
-Runs Rclone sync jobs defined in the configuration file.
-
-执行配置文件中定义的 Rclone 同步任务。
-#### Usage / 用法:
-```bash
-rclone-sync remote:/path /local/path [options]
-```
+It enables seamless mounting of cloud storage on Android devices.
 
 ---
 
-### `rclone-kill-all`
+# What Was Modified for Android
 
-Unmounts all Rclone mount points and kills all Rclone-related processes.  
+Android uses **Bionic libc**, which differs from glibc.  
+Upstream libfuse depends on features not fully supported on Android.
 
-卸载所有 Rclone 挂载点并终止相关进程。
+We used this exact libfuse commit:
 
-#### Usage / 用法:
-```bash
-rclone-kill-all
-```
+f99b7eba4fba7d1a7a8350aab898691acc60ab6f
 
----
-
-
-## Rclone Sync Configuration / Rclone 同步配置说明 (WIP)
-
-### Sync Config File (`RCLONESYNC_CONF`) / 同步配置文件
-
-You can define automatic rclone sync jobs in the `/data/adb/modules/rclone/conf/sync` file. 
-You can also set the `RCLONESYNC_CONF` environment variable to use a custom path.  
-Each line represents a sync job, format:  
-
-你可以通过配置 `/data/adb/modules/rclone/conf/sync` 文件，定义需要自动同步的 rclone 任务。
-你也可以通过设置环境变量 `RCLONESYNC_CONF` 指定其他路径。
-每一行代表一个同步任务，格式如下：
-
-```
-<remote>:<remote_path> <local_path> [optional options/可选参数]
-```
-
-- `<remote>:<remote_path>`: rclone remote name and path / rclone 配置的远程名及其路径
-- `<local_path>`: local target path / 本地目标路径
-- `[optional options]`: additional rclone sync options / 支持的其他参数
-
-### Example / 示例
-
-```
-gdrive:/Documents "/sdcard/My Documents"
-onedrive:/Photos "/sdcard/OneDrive Photos" --delete-excluded
-mybox:/Backup "/data/backup" --dry-run
-```
-
-**Notes / 注意：**
-- If the path contains spaces, wrap it in double quotes `"`  
-  路径中如有空格，请用英文双引号 `"` 包裹
-- Lines starting with `#` are comments and will be skipped  
-  以 `#` 开头的行为注释，会被自动跳过
-- Each sync job runs in background with low priority, logs to `/data/local/tmp/rclone_sync.log` by default  
-  每个同步任务会在后台以低优先级执行，默认日志输出到 `/data/local/tmp/rclone_sync.log`
+The following patches were applied:
 
 ---
 
-## Automated Updates / 自动更新
+## 1️⃣ Removed librt Dependency
 
-Daily automated workflow checks for new Rclone releases and creates pull requests with version updates.  
-每日自动检查 Rclone 新版本并创建更新 PR。
+Original (lib/meson.build):
+
+    deps += cc.find_library('rt')
+
+Android does not provide librt.
+
+Patched to:
+
+    #deps += cc.find_library('rt')
+
+Applied automatically in:
+
+    scripts/prepare_libfuse.sh
 
 ---
 
-## Contributing / 贡献
+## 2️⃣ Disabled pthread Cancellation (Android Incompatible)
 
-Contributions are welcome! Please ensure that your changes are well-documented and tested.  
+Android does not safely support:
 
-欢迎贡献！请确保你的更改有良好文档和测试。
+- pthread_cancel
+- pthread_setcancelstate
+
+### fuse_loop_mt.c Patch
+
+Injected at top of file:
+
+    #ifdef __ANDROID__
+    #define pthread_setcancelstate(a,b) ((void)0)
+    #define pthread_cancel(a) ((void)0)
+    #endif
 
 ---
 
-## License / 许可证
+### fuse.c Patch
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.  
+Original:
 
-本项目采用 MIT License，详见 [LICENSE](LICENSE)。
+    void fuse_stop_cleanup_thread(struct fuse *f)
+    {
+        if (lru_enabled(f)) {
+            pthread_mutex_lock(&f->lock);
+            pthread_cancel(f->prune_thread);
+            pthread_mutex_unlock(&f->lock);
+            pthread_join(f->prune_thread, NULL);
+        }
+    }
+
+Patched:
+
+    void fuse_stop_cleanup_thread(struct fuse *f)
+    {
+    #ifdef __ANDROID__
+        (void)f;
+        return;
+    #else
+        if (lru_enabled(f)) {
+            pthread_mutex_lock(&f->lock);
+            pthread_cancel(f->prune_thread);
+            pthread_mutex_unlock(&f->lock);
+            pthread_join(f->prune_thread, NULL);
+        }
+    #endif
+    }
+
+This prevents crashes caused by unsupported thread cancellation.
+
+---
+
+# Build Requirements
+
+- Linux or WSL
+- Android NDK (r26+ recommended)
+- Meson
+- Ninja
+- Git
+- Clang (from NDK)
+
+---
+
+# Build Process
+
+Clean build:
+
+    rm -rf libfuse
+    ./build.sh armeabi-v7a v1.73.1
+
+The build script:
+
+1. Clones libfuse
+2. Checks out required commit
+3. Applies Android patches
+4. Cross-compiles using NDK
+5. Packages Magisk module
+
+---
+
+# Configuration Paths
+
+    /data/adb/modules/rclone/conf/rclone.conf
+    /data/adb/modules/rclone/conf/env
+    /data/adb/modules/rclone/conf/htpasswd
+    /data/adb/modules/rclone/conf/sync
+
+---
+
+# Included Scripts
+
+### rclone-config
+
+Launch rclone configuration:
+
+    rclone-config
+
+---
+
+### rclone-web
+
+Start Web GUI:
+
+    rclone-web --rc-addr :8080
+
+---
+
+### rclone-sync
+
+Run sync jobs:
+
+    rclone-sync remote:/path /local/path [options]
+
+---
+
+### rclone-kill-all
+
+Unmount and stop all rclone processes:
+
+    rclone-kill-all
+
+---
+
+# Sync Configuration Format
+
+File:
+
+    /data/adb/modules/rclone/conf/sync
+
+Format:
+
+    <remote>:<remote_path> <local_path> [options]
+
+Example:
+
+    gdrive:/Documents "/sdcard/My Documents"
+    onedrive:/Photos "/sdcard/Photos" --delete-excluded
+    mybox:/Backup "/data/backup" --dry-run
+
+Notes:
+
+- Use quotes for paths containing spaces
+- Lines starting with # are ignored
+- Logs stored at /data/local/tmp/rclone_sync.log
+
+---
+
+# Current Architecture Support
+
+- armeabi-v7a
+
+---
+
+# License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+---
+
+# Author
+
+patch by RafikBeng for armeabi-v7a from the original project https://github.com/NewFuture/rclone-fuse3-magisk.
