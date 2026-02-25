@@ -113,7 +113,7 @@ jobs:
           ---
 
           *This release was automatically created when the version in module.prop was updated.*  
-          *此版本是在 module.prop 中的版本更新时自动创建的。*
+          *This release was automatically created when the version in module.prop was updated.*
           EOFFOOTER
           
           # Substitute variables in the release body
@@ -141,21 +141,21 @@ jobs:
     permissions:
           contents: write
     steps:
-      # Step 1.1: 检出代码并初始化子模块
+      # Step 1.1: Checkout code and initialize submodules
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          submodules: true  # 初始化子模块
+          submodules: true  # Initialize submodules
 
-      # Step 1.2 : 运行补丁脚本
+      # Step 1.2: Run patch script
       - name: Patch
         run: ./patch.sh
 
-      # Step 2.1: 安装 meson 和 ninja
+      # Step 2.1: Install meson and ninja
       - name: Install meson and ninja
         run: pip install meson ninja
 
-      # Step 2.2: 设置 Go 环境
+      # Step 2.2: Set up Go environment
       - name: Set up Go
         uses: actions/setup-go@v5
 
@@ -172,21 +172,17 @@ jobs:
           echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
           echo "TAG_NAME: $TAG_NAME"
 
-      # Step 3: 设置 Android NDK 环境
+      # Step 3: Set up Android NDK environment
       - name: Set up Android NDK
         uses: nttld/setup-ndk@v1
         with:
           ndk-version: r27c
 
-      # Step 4.1: 配置交叉编译环境变量并构建 Android 各平台二进制文件
-      - name: Build arm64-v8a
-        run: ./build.sh arm64-v8a $TAG_NAME
+      # Step 4: Build Android armeabi-v7a binary
+      - name: Build armeabi-v7a
+        run: ./build.sh armeabi-v7a $TAG_NAME
 
-      # Step 4.2: 构建 Android x86_64 二进制文件
-      - name: Build x86_64
-        run: ./build.sh x86_64 $TAG_NAME
-
-      # Step 5: 上传构建产物
+      # Step 5: Upload build artifacts
       - name: Upload Android binaries
         uses: actions/upload-artifact@v4
         with:
@@ -194,15 +190,15 @@ jobs:
           if-no-files-found: error
           path: "*.zip"
 
-      # Step 6: 如果有 tag 或版本变更，上传构建产物到 Release
+      # Step 6: If tag or version change detected, upload build artifacts to Release
       - name: Upload binaries to Release
         if: env.TAG_NAME != ''
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # 上传zip文件
+          # Upload zip files
           gh release upload "$TAG_NAME" *.zip --clobber
-          # 上传 update.json 文件
+          # Upload update.json files
           gh release upload "$TAG_NAME" update*.json --clobber
 
 
