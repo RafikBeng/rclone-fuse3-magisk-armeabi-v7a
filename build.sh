@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 # 🔥 Prepare libfuse automatically
+chmod +x scripts/prepare_libfuse.sh
 ./scripts/prepare_libfuse.sh
 # Get the input parameters
 ABI=$1
