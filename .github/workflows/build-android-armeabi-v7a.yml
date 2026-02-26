@@ -186,12 +186,29 @@ jobs:
       - name: Upload Android binaries
         uses: actions/upload-artifact@v4
         with:
-          name: magisk-rclone
+          name: magisk-rclone-armeabi-v7a
           if-no-files-found: error
           path: "*.zip"
 
       # Step 6: If tag or version change detected, upload build artifacts to Release
-      - name: Upload binaries to Release
+      - name: Ensure Release Exists
+        if: env.TAG_NAME != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Create the release if it doesn't already exist (e.g. when a tag is pushed directly)
+          if ! gh release view "$TAG_NAME" > /dev/null 2>&1; then
+            echo "Release $TAG_NAME does not exist, creating it..."
+            gh release create "$TAG_NAME" \
+              --title "$TAG_NAME" \
+              --notes "Release $TAG_NAME" \
+              --draft=false \
+              --prerelease=false
+          else
+            echo "Release $TAG_NAME already exists, skipping creation."
+          fi
+
+      - name: Upload binary to Release
         if: env.TAG_NAME != ''
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
