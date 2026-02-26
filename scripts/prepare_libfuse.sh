@@ -14,12 +14,13 @@ git clone https://github.com/libfuse/libfuse.git $LIBFUSE_DIR
 
 cd $LIBFUSE_DIR
 echo "[*] Checking out commit $LIBFUSE_COMMIT..."
+
 git checkout $LIBFUSE_COMMIT
+
 cd ..
+
 echo "[*] Applying Android pthread patches..."
 
 ./patch.sh
-
-
 
 echo "[*] libfuse ready."
